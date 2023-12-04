@@ -50,7 +50,7 @@ fn get_states() -> KeyStates {
         final_states: finals,
     };
 
-    println!("{:?}", states);
+    //println!("{:?}", states);
     states
 }
 
@@ -130,7 +130,7 @@ fn get_transitions() -> Vec<TransitionFunction> {
 
         let current_function = TransitionFunction { lhs, rhs };
         functions.push(current_function);
-        println!("{:?}", functions);
+        //println!("{:?}", functions);
     }
 
     functions
