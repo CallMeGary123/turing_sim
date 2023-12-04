@@ -1,28 +1,34 @@
 use std::io::{self, Write};
-
-#[derive(Debug)]
-struct TransitionFunction{
-    lhs:Vec<String>,
-    rhs:Vec<String>
+#[derive(Debug, PartialEq)]
+struct LHS {
+    state:String,
+    input:char
 }
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
+struct RHS {
+    state:String,
+    char:char,
+    direction:char
+}
+
+#[derive(Debug, PartialEq)]
+struct TransitionFunction{
+    lhs:LHS,
+    rhs:RHS
+}
+#[derive(Debug, PartialEq)]
 struct KeyStates{
     initial_state:String,
     final_states:Vec<String>
 }
 
 fn main() {
-    println!("Hello, world!");
-    let input = get_input();
-    //for c in input.chars(){
-    //    print!("{}\n",c)
-    //}
     let transitions = get_tarnsitions();
-    parse(input, transitions);
+    let states = get_states();
+    println!("Input:");
+    let input = get_input().replace("\r\n", "");
+    parse(input, transitions, states);
 }
-
-    //let key_states = get_states();
-
 
 fn get_states() -> KeyStates {
     println!("Enter initial state:");
@@ -50,29 +56,42 @@ fn get_states() -> KeyStates {
 
     states
 }
-fn parse(mut input: String, transitions: Vec<TransitionFunction>, states: KeyStates){
+
+fn parse(mut input: String, transitions: Vec<TransitionFunction>, states: KeyStates) {
     let mut i = 1;
     let blank = "□";
     input.insert_str(0, blank);
     input.push_str(blank);
     let mut input: Vec<char> = input.chars().collect();
     let mut current_state = states.initial_state;
-    let mut current_char = input[i].to_string(); 
-    let mut current_function: Option<&TransitionFunction> = None;
-    loop {
-        let lhs_to_find =vec![current_state, current_char];
-        if let Some(transition) = transitions.iter().find(|t| t.lhs == lhs_to_find){
-            current_state = transition.rhs[0];
-            input[i] = transition.rhs[1];
-            if transition.rhs[2] == "L"{
+
+    while i < input.len() {
+        let current_char = input[i];
+        let lhs_to_find = LHS {
+            state: current_state.clone(),
+            input: current_char.clone(),
+        };
+
+        if let Some(transition) = transitions.iter().find(|t| t.lhs == lhs_to_find) {
+            current_state = transition.rhs.state.clone();
+            input[i] = transition.rhs.char;
+            println!("{:?}", input);
+            if transition.rhs.direction == 'L' {
                 i = i - 1;
             } else {
                 i = i + 1;
             }
         } else {
-            
+            break;
         }
     }
+
+    if states.final_states.contains(&current_state) {
+        println!("Success");
+    } else {
+        println!("Failure");
+    }
+
 }
 
 fn get_tarnsitions() -> Vec<TransitionFunction> {
@@ -96,6 +115,10 @@ fn get_tarnsitions() -> Vec<TransitionFunction> {
         if lhs[1] == "blank" {
             lhs[1] = "□".to_string();
         }
+        let lhs = LHS {
+            state: lhs[0].clone(),
+            input: lhs[1].chars().next().unwrap(),
+        };
         let mut rhs: Vec<String> = func[1]
             .trim_matches(|c| c == '(' || c == ')' || c == '\r' || c == '\n')
             .split(',')
@@ -104,13 +127,16 @@ fn get_tarnsitions() -> Vec<TransitionFunction> {
         if rhs[1] == "blank" {
             rhs[1] = "□".to_string();
         }
-        let current_function = TransitionFunction { lhs, rhs };
+        let rhs = RHS {
+            state: rhs[0].clone(),
+            char: rhs[1].chars().next().unwrap(), 
+            direction:rhs[2].chars().next().unwrap()};
+        let current_function = TransitionFunction {lhs: lhs, rhs:rhs};
         functions.push(current_function);
         println!("{:?}", functions);        
     }
     functions
 }
-
 
 fn get_input() -> String{
     let mut input = String::new();
