@@ -1,26 +1,26 @@
 use regex::Regex;
 use std::io::{self, Write};
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(PartialEq)]
 struct LHS {
     state: String,
     input: char,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(PartialEq)]
 struct RHS {
     state: String,
     char: char,
     direction: char,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(PartialEq)]
 struct TransitionFunction {
     lhs: LHS,
     rhs: RHS,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 struct KeyStates {
     initial_state: String,
     final_states: Vec<String>,
@@ -34,84 +34,11 @@ fn main() {
     parse(input, &transitions, &states);
 }
 
-fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
-    println!("Enter initial state:");
-    let initial: String;
-    loop {
-        let init = get_input().trim().to_string();
-        if state_validator(&init, transitions) {
-            initial = init;
-            break;
-        } else {
-            println!("Invalid initial state")
-        }
-    }
-
-    println!("Enter final state [enter 'end' when you are done]: ");
-    let mut finals: Vec<String> = Vec::new();
-    loop {
-        let fin = get_input().trim().to_string();
-        if fin.to_uppercase() == "END" {
-            break;
-        }
-        if state_validator(&fin, transitions) {
-            finals.push(fin);
-        } else {
-            println!("Invalid initial state")
-        }
-    }
-    let states = KeyStates {
-        initial_state: initial,
-        final_states: finals,
-    };
-
-    //println!("{:?}", states);
-    states
-}
-
-fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) {
-    println!("\nparsing...");
-    let input = format!("□{}□", input);
-    let mut input: Vec<char> = input.chars().collect();
-    println!("{:?}",input);
-    let mut i = 1;
-    let mut current_state = states.initial_state.clone();
-
-    while i < input.len() {
-        let current_char = input[i];
-        let lhs_to_find = LHS {
-            state: current_state.clone(),
-            input: current_char,
-        };
-
-        if let Some(transition) = transitions.iter().find(|t| t.lhs == lhs_to_find) {
-            println!("{:?}",transition);
-            current_state = transition.rhs.state.clone();
-            input[i] = transition.rhs.char;
-            println!("{:?}", input);
-
-            i = match transition.rhs.direction {
-                'L' => i - 1,
-                'R' => i + 1,
-                _ => i,
-            };
-        } else {
-            break;
-        }
-    }
-
-    if states.final_states.contains(&current_state) {
-        println!("Success");
-    } else {
-        println!("Failure");
-    }
-}
-
 fn get_transitions() -> Vec<TransitionFunction> {
     let mut functions = Vec::new();
 
-    println!("Enter functions e.g δ(q1,a)=(q2,b,L) [enter END if you don't want to add anymore functions]: ");
-    println!("you can use 'blank' instead of □");
+    println!("Enter functions e.g δ(q1,a)=(q2,b,L) [enter 'END' if you don't want to add anymore functions]: ");
+    println!("*you can use 'blank' instead of □");
 
     loop {
         print!("δ");
@@ -153,10 +80,91 @@ fn get_transitions() -> Vec<TransitionFunction> {
 
         let current_function = TransitionFunction { lhs, rhs };
         functions.push(current_function);
-        //println!("{:?}", functions);
     }
 
     functions
+}
+
+fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
+    println!("Enter initial state e.g. q0:");
+    let initial: String;
+    loop {
+        let init = get_input().trim().to_string();
+        if state_validator(&init, transitions) {
+            initial = init;
+            break;
+        } else {
+            println!("Invalid initial state")
+        }
+    }
+
+    println!(
+        "Enter final state e.g. q1 [Enter 'end' if you don't want to add anymore final states]: "
+    );
+    let mut finals: Vec<String> = Vec::new();
+    loop {
+        let fin = get_input().trim().to_string();
+        if fin.to_uppercase() == "END" {
+            break;
+        }
+        if state_validator(&fin, transitions) {
+            finals.push(fin);
+        } else {
+            println!("Invalid final state")
+        }
+    }
+    let states = KeyStates {
+        initial_state: initial,
+        final_states: finals,
+    };
+
+    states
+}
+
+fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) {
+    println!("\nparsing...");
+    let input = format!("□{}□", input);
+    let mut input: Vec<char> = input.chars().collect();
+    println!("{:?}", input);
+    let mut i = 1;
+    let mut current_state = states.initial_state.clone();
+
+    while i < input.len() {
+        let current_char = input[i];
+        let lhs_to_find = LHS {
+            state: current_state.clone(),
+            input: current_char,
+        };
+        println!("Current state: {}", current_state);
+        println!("Current input: '{}', Head position: {}", current_char, i);
+        if let Some(transition) = transitions.iter().find(|t| t.lhs == lhs_to_find) {
+            println!(
+                "Transition function: δ({},{})=({},{},{})\n",
+                transition.lhs.state,
+                transition.lhs.input,
+                transition.rhs.state,
+                transition.rhs.char,
+                transition.rhs.direction
+            );
+            current_state = transition.rhs.state.clone();
+            input[i] = transition.rhs.char;
+            println!("{:?}", input);
+
+            i = match transition.rhs.direction {
+                'L' => i - 1,
+                'R' => i + 1,
+                _ => i,
+            };
+        } else {
+            break;
+        }
+    }
+
+    if states.final_states.contains(&current_state) {
+        println!("Success");
+    } else {
+        println!("Failure");
+    }
 }
 
 fn function_validator(function: &str) -> bool {
@@ -169,6 +177,7 @@ fn state_validator(state: &str, transitions: &[TransitionFunction]) -> bool {
         .iter()
         .any(|transition| transition.lhs.state == state || transition.rhs.state == state)
 }
+
 fn get_input() -> String {
     let mut input = String::new();
     io::stdin().read_line(&mut input).expect("error occurred");
