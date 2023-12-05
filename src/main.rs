@@ -28,24 +28,39 @@ struct KeyStates {
 
 fn main() {
     let transitions = get_transitions();
-    let states = get_states();
+    let states = get_states(&transitions);
     println!("Input:");
     let input = get_input().replace("\r\n", "");
     parse(input, &transitions, &states);
 }
 
-fn get_states() -> KeyStates {
+fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
     println!("Enter initial state:");
-    let initial = get_input().trim().to_string();
+    let initial:String;
+    loop {
+        let init = get_input().trim().to_string();
+        if state_validator(&init, transitions){
+            initial = init;
+            break;
+        } else {
+            println!("Invalid initial state")
+        }
+    }
 
-    println!("Enter final states:");
-    let finals = get_input()
-        .trim()
-        .replace(" ", "")
-        .split(',')
-        .map(|s| s.trim().to_string())
-        .collect();
+    println!("Enter final state [enter 'end' when you are done]: ");
+    let mut finals:Vec<String> = Vec::new();
+    loop {
+        let fin = get_input().trim().to_string();
+        if fin.to_uppercase() == "END"{
+            break;
+        }
+        if state_validator(&fin, transitions){
+            finals.push(fin);
+        } else {
+            println!("Invalid initial state")
+        }
 
+    }
     let states = KeyStates {
         initial_state: initial,
         final_states: finals,
@@ -141,11 +156,16 @@ fn get_transitions() -> Vec<TransitionFunction> {
     functions
 }
 
-fn function_validator(input: &str) -> bool {
+fn function_validator(function: &str) -> bool {
     let re = Regex::new(r"\(.*\,.\)\=\(.*\,(.|blank)\,(L|R|l|r)\)").unwrap();
-    re.is_match(input)
+    re.is_match(function)
 }
 
+fn state_validator(state: &str, transitions: &[TransitionFunction]) -> bool {
+    transitions.iter().any(|transition| {
+        transition.lhs.state == state || transition.rhs.state == state
+    })
+}
 fn get_input() -> String {
     let mut input = String::new();
     io::stdin().read_line(&mut input).expect("error occurred");
