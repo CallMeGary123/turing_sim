@@ -29,7 +29,7 @@ struct KeyStates {
 fn main() {
     let transitions = get_transitions();
     let states = get_states(&transitions);
-    println!("Input:");
+    println!("\nInput:");
     let input = get_input().replace("\r\n", "");
     parse(input, &transitions, &states);
 }
@@ -70,8 +70,10 @@ fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
 }
 
 fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) {
+    println!("\nparsing...");
     let input = format!("□{}□", input);
     let mut input: Vec<char> = input.chars().collect();
+    println!("{:?}",input);
     let mut i = 1;
     let mut current_state = states.initial_state.clone();
 
@@ -83,9 +85,11 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) 
         };
 
         if let Some(transition) = transitions.iter().find(|t| t.lhs == lhs_to_find) {
+            println!("{:?}",transition);
             current_state = transition.rhs.state.clone();
             input[i] = transition.rhs.char;
             println!("{:?}", input);
+
             i = match transition.rhs.direction {
                 'L' => i - 1,
                 'R' => i + 1,
