@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use regex::Regex;
 
 #[derive(Debug, PartialEq, Clone)]
 struct LHS {
@@ -103,6 +104,10 @@ fn get_transitions() -> Vec<TransitionFunction> {
         }
 
         let func = func.replace(" ", "");
+        if !function_validator(&func){
+            println!("invalid format... (function was not added)");
+            continue;
+        }
         let parts: Vec<&str> = func.split('=').collect();
 
         let lhs_parts: Vec<&str> = parts[0]
@@ -125,7 +130,7 @@ fn get_transitions() -> Vec<TransitionFunction> {
         let rhs = RHS {
             state: rhs_parts[0].to_string(),
             char: rhs_parts[1].chars().next().unwrap(),
-            direction: rhs_parts[2].chars().next().unwrap(),
+            direction: rhs_parts[2].to_uppercase().chars().next().unwrap(),
         };
 
         let current_function = TransitionFunction { lhs, rhs };
@@ -134,6 +139,11 @@ fn get_transitions() -> Vec<TransitionFunction> {
     }
 
     functions
+}
+
+fn function_validator(input: &str) -> bool {
+    let re = Regex::new(r"\(.*\,.\)\=\(.*\,(.|blank)\,(L|R|l|r)\)").unwrap();
+    re.is_match(input)
 }
 
 fn get_input() -> String {
