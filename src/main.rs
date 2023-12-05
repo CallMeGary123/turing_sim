@@ -1,5 +1,5 @@
-use std::io::{self, Write};
 use regex::Regex;
+use std::io::{self, Write};
 
 #[derive(Debug, PartialEq, Clone)]
 struct LHS {
@@ -36,10 +36,10 @@ fn main() {
 
 fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
     println!("Enter initial state:");
-    let initial:String;
+    let initial: String;
     loop {
         let init = get_input().trim().to_string();
-        if state_validator(&init, transitions){
+        if state_validator(&init, transitions) {
             initial = init;
             break;
         } else {
@@ -48,18 +48,17 @@ fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
     }
 
     println!("Enter final state [enter 'end' when you are done]: ");
-    let mut finals:Vec<String> = Vec::new();
+    let mut finals: Vec<String> = Vec::new();
     loop {
         let fin = get_input().trim().to_string();
-        if fin.to_uppercase() == "END"{
+        if fin.to_uppercase() == "END" {
             break;
         }
-        if state_validator(&fin, transitions){
+        if state_validator(&fin, transitions) {
             finals.push(fin);
         } else {
             println!("Invalid initial state")
         }
-
     }
     let states = KeyStates {
         initial_state: initial,
@@ -119,7 +118,7 @@ fn get_transitions() -> Vec<TransitionFunction> {
         }
 
         let func = func.replace(" ", "");
-        if !function_validator(&func){
+        if !function_validator(&func) {
             println!("invalid format... (function was not added)");
             continue;
         }
@@ -162,9 +161,9 @@ fn function_validator(function: &str) -> bool {
 }
 
 fn state_validator(state: &str, transitions: &[TransitionFunction]) -> bool {
-    transitions.iter().any(|transition| {
-        transition.lhs.state == state || transition.rhs.state == state
-    })
+    transitions
+        .iter()
+        .any(|transition| transition.lhs.state == state || transition.rhs.state == state)
 }
 fn get_input() -> String {
     let mut input = String::new();
