@@ -99,7 +99,7 @@ fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
     }
 
     println!(
-        "Enter final state e.g. q1 [Enter 'end' if you don't want to add anymore final states]: "
+        "Enter final state e.g. q1 [Enter 'END' if you don't want to add anymore final states]: "
     );
     let mut finals: Vec<String> = Vec::new();
     loop {
