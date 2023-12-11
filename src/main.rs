@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::io::{self, Write};
+use stybulate::{Table, Style, Cell, Headers};
 
 #[derive(PartialEq)]
 struct LHS {
@@ -125,11 +126,18 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) 
     println!("\nparsing...");
     let input = format!("□{}□", input);
     let mut input: Vec<char> = input.chars().collect();
-    println!("{:?}", input);
+    let mut input_cell: Vec<Cell> = Vec::new();
+
     let mut i = 1;
     let mut current_state = states.initial_state.clone();
 
     while i < input.len() {
+        //
+        let inp_copy = input.clone();
+        for c in inp_copy{
+            input_cell.push(Cell::from(c.to_string().as_str()));
+        }
+        //
         let current_char = input[i];
         let lhs_to_find = LHS {
             state: current_state.clone(),
