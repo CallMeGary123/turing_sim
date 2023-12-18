@@ -1,6 +1,6 @@
 use regex::Regex;
 use std::io::{self, Write};
-use stybulate::{Table, Style, Cell, Headers};
+use stybulate::{Cell, Style, Table};
 
 #[derive(PartialEq)]
 struct LHS {
@@ -27,6 +27,7 @@ struct KeyStates {
     final_states: Vec<String>,
 }
 
+// main
 fn main() {
     let transitions = get_transitions();
     let states = get_states(&transitions);
@@ -35,6 +36,7 @@ fn main() {
     parse(input, &transitions, &states);
 }
 
+// main functions
 fn get_transitions() -> Vec<TransitionFunction> {
     let mut functions = Vec::new();
 
@@ -126,18 +128,29 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) 
     println!("\nparsing...");
     let input = format!("□{}□", input);
     let mut input: Vec<char> = input.chars().collect();
-    let mut input_cell: Vec<Cell> = Vec::new();
 
     let mut i = 1;
     let mut current_state = states.initial_state.clone();
 
     while i < input.len() {
-        //
-        let inp_copy = input.clone();
-        for c in inp_copy{
-            input_cell.push(Cell::from(c.to_string().as_str()));
+        let mut input_cell: Vec<Cell> = Vec::new();
+        let mut head_cell: Vec<Cell> = Vec::new();
+
+        for (index, &c) in input.iter().enumerate() {
+            let cell = Cell::from(c.to_string().as_str());
+            input_cell.push(cell);
+
+            // Add spaces to head_cell at the head position (index i)
+            let head_symbol = if index == i { "▼" } else { " " };
+            head_cell.push(Cell::from(head_symbol));
         }
-        //
+
+        head_cell.insert(0, Cell::from("HEAD"));
+        input_cell.insert(0, Cell::from("INPUT"));
+
+        let table = Table::new(Style::Fancy, vec![head_cell, input_cell], None);
+        println!("{}", table.tabulate());
+
         let current_char = input[i];
         let lhs_to_find = LHS {
             state: current_state.clone(),
@@ -156,7 +169,6 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) 
             );
             current_state = transition.rhs.state.clone();
             input[i] = transition.rhs.char;
-            println!("{:?}", input);
 
             i = match transition.rhs.direction {
                 'L' => i - 1,
@@ -175,6 +187,7 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) 
     }
 }
 
+// helper functions
 fn function_validator(function: &str) -> bool {
     let re = Regex::new(r"\(.*\,.\)\=\(.*\,(.|blank)\,(L|R|l|r)\)").unwrap();
     re.is_match(function)
