@@ -56,6 +56,7 @@ fn get_transitions() -> Vec<TransitionFunction> {
             println!("invalid format... (function was not added)");
             continue;
         }
+        let func = func.replace("blank", "□");
         let parts: Vec<&str> = func.split('=').collect();
 
         let lhs_parts: Vec<&str> = parts[0]
@@ -132,26 +133,26 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) 
     let mut i = 1;
     let mut current_state = states.initial_state.clone();
 
-    while i < input.len() {
-        let mut input_cell: Vec<Cell> = Vec::new();
+    loop {
+        let mut tape_cell: Vec<Cell> = Vec::new();
         let mut head_cell: Vec<Cell> = Vec::new();
+
+        let current_char = input[i];
 
         for (index, &c) in input.iter().enumerate() {
             let cell = Cell::from(c.to_string().as_str());
-            input_cell.push(cell);
+            tape_cell.push(cell);
 
-            // Add spaces to head_cell at the head position (index i)
             let head_symbol = if index == i { "▼" } else { " " };
             head_cell.push(Cell::from(head_symbol));
         }
 
         head_cell.insert(0, Cell::from("HEAD"));
-        input_cell.insert(0, Cell::from("INPUT"));
+        tape_cell.insert(0, Cell::from("TAPE"));
 
-        let table = Table::new(Style::Fancy, vec![head_cell, input_cell], None);
+        let table = Table::new(Style::Fancy, vec![head_cell, tape_cell], None);
         println!("{}", table.tabulate());
 
-        let current_char = input[i];
         let lhs_to_find = LHS {
             state: current_state.clone(),
             input: current_char,
@@ -169,12 +170,18 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) 
             );
             current_state = transition.rhs.state.clone();
             input[i] = transition.rhs.char;
-
-            i = match transition.rhs.direction {
-                'L' => i - 1,
-                'R' => i + 1,
-                _ => i,
-            };
+            if transition.rhs.direction == 'L' {
+                if i == 0 {
+                    input.insert(0, '□');
+                } else {
+                    i = i - 1;
+                }
+            } else if transition.rhs.direction == 'R' {
+                i = i + 1;
+                if i == input.len() {
+                    input.push('□');
+                }
+            }
         } else {
             break;
         }
@@ -189,7 +196,7 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates) 
 
 // helper functions
 fn function_validator(function: &str) -> bool {
-    let re = Regex::new(r"\(.*\,.\)\=\(.*\,(.|blank)\,(L|R|l|r)\)").unwrap();
+    let re = Regex::new(r"\(.*\,(.|blank)\)\=\(.*\,(.|blank)\,(L|R|l|r)\)").unwrap();
     re.is_match(function)
 }
 
