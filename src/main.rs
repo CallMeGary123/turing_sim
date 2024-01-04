@@ -27,9 +27,9 @@ struct KeyStates {
     initial_state: String,
     final_states: Vec<String>,
 }
-//demos
-struct Demo {
-    functions: Vec<TransitionFunction>,
+
+struct Machine {
+    transitions: Vec<TransitionFunction>,
     states: KeyStates,
 }
 
@@ -52,7 +52,7 @@ fn main() {
             let demo = &dem[demo_index];
             println!("\nInput:");
             let input = get_input().replace("\r\n", "");
-            parse(input, &demo.functions, &demo.states);
+            parse(input, &demo.transitions, &demo.states);
         } else {
             println!("Demo index out of bounds");
         }
@@ -70,9 +70,13 @@ fn main() {
         println!("run with 'cargo run -- help' or 'turing_sim.exe help' to see the help menu");
         let transitions = get_transitions();
         let states = get_states(&transitions);
+        let turing_machine = Machine {
+            transitions: transitions,
+            states: states,
+        };
         println!("\nInput:");
         let input = get_input().replace("\r\n", "");
-        parse(input, &transitions, &states);
+        parse(input, &turing_machine.transitions, &turing_machine.states);
     }
 }
 
@@ -253,7 +257,7 @@ fn get_input() -> String {
 }
 
 // demos
-fn demos() -> Vec<Demo> {
+fn demos() -> Vec<Machine> {
     let f1 = TransitionFunction {
         lhs: LHS {
             state: String::from("q0"),
@@ -296,8 +300,8 @@ fn demos() -> Vec<Demo> {
     };
     let functions_translator = vec![f1, f2, f3];
 
-    let demo1 = Demo {
-        functions: functions_translator,
+    let demo1 = Machine {
+        transitions: functions_translator,
         states: s1,
     };
 
@@ -427,8 +431,8 @@ fn demos() -> Vec<Demo> {
 
     let functions_accepter = vec![f4, f5, f6, f7, f8, f9, f10, f11, f12, f13];
 
-    let demo2 = Demo {
-        functions: functions_accepter,
+    let demo2 = Machine {
+        transitions: functions_accepter,
         states: s2,
     };
 
@@ -523,8 +527,8 @@ fn demos() -> Vec<Demo> {
 
     let functions_copier = vec![f14, f15, f16, f17, f18, f19, f20];
 
-    let demo3 = Demo {
-        functions: functions_copier,
+    let demo3 = Machine {
+        transitions: functions_copier,
         states: s3,
     };
     let demos = vec![demo1, demo2, demo3];
