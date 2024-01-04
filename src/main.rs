@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::env;
 use std::io::{self, Write};
-use stybulate::{Cell, Style, Table};
+use prettytable::{format,ptable, row, table, Cell, Row, Table};
 
 #[derive(PartialEq)]
 struct LHS {
@@ -177,6 +177,7 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
     println!("\nparsing...");
     //let input = format!("□{}□", input);
     //let mut input: Vec<char> = input.chars().collect();
+    
     let mut input: Vec<String> = input.chars().collect::<String>()
         .chars()
         .collect::<Vec<char>>()
@@ -190,24 +191,43 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
     let mut current_state = states.initial_state.clone();
 
     loop {
-        let mut tape_cell: Vec<Cell> = Vec::new();
-        let mut head_cell: Vec<Cell> = Vec::new();
-
+        let mut table = Table::new();
+        table.set_format(
+            format::FormatBuilder::new()
+                .column_separator('│')
+                .borders('│')
+                .separators(
+                    &[format::LinePosition::Top],
+                    format::LineSeparator::new('─', '┬', '┌', '┐'),
+                )
+                .separators(
+                    &[format::LinePosition::Intern],
+                    format::LineSeparator::new('─', '┼', '├', '┤'),
+                )
+                .separators(
+                    &[format::LinePosition::Bottom],
+                    format::LineSeparator::new('─', '┴', '└', '┘'),
+                )
+                .padding(1, 1)
+                .build(),
+        );
+        
         let current_input = input[i].clone();
-
+        let mut tape_cell = Row::new(vec![Cell::new("TAPE")]);
+        let mut head_cell = Row::new(vec![Cell::new("HEAD")]);
         for (index, &ref c) in input.iter().enumerate() {
-            let cell = Cell::from(c.to_string().as_str());
-            tape_cell.push(cell);
-
+            let cell = Cell::new(c.to_string().as_str());
+            tape_cell.add_cell(cell);
+    
             let head_symbol = if index == i { "▼" } else { " " };
-            head_cell.push(Cell::from(head_symbol));
+            let head_cell_content = Cell::new(head_symbol);
+            head_cell.add_cell(head_cell_content);
         }
 
-        head_cell.insert(0, Cell::from("HEAD"));
-        tape_cell.insert(0, Cell::from("TAPE"));
+        table.add_row(head_cell);
+        table.add_row(tape_cell);
 
-        let table = Table::new(Style::Fancy, vec![head_cell, tape_cell], None);
-        println!("{}", table.tabulate());
+        table.printstd();
 
         let lhs_to_find = LHS {
             state: current_state.clone(),

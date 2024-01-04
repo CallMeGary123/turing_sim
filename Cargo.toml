@@ -6,5 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+prettytable-rs = "0.10.0"
 regex = "1.10.2"
-stybulate = "1.1.2"
+
