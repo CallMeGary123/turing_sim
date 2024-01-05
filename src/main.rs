@@ -1,7 +1,8 @@
+use colored::*;
+use prettytable::{format, Cell, Row, Table};
+use regex::Regex;
 use std::env;
 use std::io::{self, Write};
-use regex::Regex;
-use prettytable::{format, Cell, Row, Table};
 
 #[derive(PartialEq)]
 struct LHS {
@@ -72,7 +73,7 @@ fn main() {
         println!("run with 'cargo run -- help' or 'turing_sim.exe help' to see the help menu");
         print!("Number of tracks: ");
         io::stdout().flush().expect("failed to flush");
-        let tracks: usize = get_input().trim().parse().unwrap(); 
+        let tracks: usize = get_input().trim().parse().unwrap();
         let transitions = get_transitions(tracks);
         let states = get_states(&transitions);
         let turing_machine = Machine {
@@ -82,7 +83,12 @@ fn main() {
         };
         println!("\nInput:");
         let input = get_input().replace("\r\n", "");
-        parse(input, &turing_machine.transitions, &turing_machine.states, turing_machine.tracks);
+        parse(
+            input,
+            &turing_machine.transitions,
+            &turing_machine.states,
+            turing_machine.tracks,
+        );
     }
 }
 
@@ -133,10 +139,12 @@ fn get_transitions(chunk: usize) -> Vec<TransitionFunction> {
             direction: rhs_parts[2].to_uppercase().chars().next().unwrap(),
         };
 
-        if (lhs.input != "□".repeat(chunk) && lhs.input.len() != chunk) || (rhs.replacement != "□".repeat(chunk) && rhs.replacement.len() != chunk) {
+        if (lhs.input != "□".repeat(chunk) && lhs.input.len() != chunk)
+            || (rhs.replacement != "□".repeat(chunk) && rhs.replacement.len() != chunk)
+        {
             println!("invalid format... length mismatch (function was not added)");
             continue;
-        } 
+        }
         let current_function = TransitionFunction { lhs, rhs };
         functions.push(current_function);
     }
@@ -184,8 +192,10 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
     println!("\nparsing...");
     //let input = format!("□{}□", input);
     //let mut input: Vec<char> = input.chars().collect();
-    
-    let mut input: Vec<String> = input.chars().collect::<String>()
+
+    let mut input: Vec<String> = input
+        .chars()
+        .collect::<String>()
         .chars()
         .collect::<Vec<char>>()
         .chunks(chunk)
@@ -224,7 +234,6 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
         for (index, _) in input.iter().enumerate() {
             let head_symbol = if index == i { "▼" } else { " " };
             head_row.add_cell(Cell::new(head_symbol));
-     
         }
         table.add_row(head_row);
 
@@ -237,11 +246,7 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
                 }
             }
             table.add_row(tape_row);
-
         }
-
-        
-
 
         table.printstd();
 
@@ -280,9 +285,9 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
     }
 
     if states.final_states.contains(&current_state) {
-        println!("Success");
+        println!("{}", "Success".green());
     } else {
-        println!("Failure");
+        println!("{}", "Failure".red());
     }
 }
 

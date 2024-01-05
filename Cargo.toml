@@ -1,11 +1,12 @@
 [package]
 name = "turing_sim"
-version = "0.9.5"
+version = "1.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+colored = "2.1.0"
 prettytable-rs = "0.10.0"
 regex = "1.10.2"
 
