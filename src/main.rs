@@ -66,7 +66,7 @@ fn main() {
         println!("demo 1 : accepts strings in form of a(n)b(n)");
         println!("demo 2 : copies strings of '1'");
         println!("\n*Run without options to input your own turing machine")
-    } /*else {
+    } else {
         // Default behavior when no arguments are provided
         println!("run with 'cargo run -- help' or 'turing_sim.exe help' to see the help menu");
         let tracks: usize = get_input().parse().unwrap(); 
@@ -80,11 +80,11 @@ fn main() {
         println!("\nInput:");
         let input = get_input().replace("\r\n", "");
         parse(input, &turing_machine.transitions, &turing_machine.states, turing_machine.tracks);
-    }*/
+    }
 }
 
 // main functions
-/* 
+
 fn get_transitions() -> Vec<TransitionFunction> {
     let mut functions = Vec::new();
 
@@ -115,7 +115,7 @@ fn get_transitions() -> Vec<TransitionFunction> {
 
         let lhs = LHS {
             state: lhs_parts[0].to_string(),
-            input: lhs_parts[1].chars().next().unwrap(),
+            input: lhs_parts[1].to_string(),
         };
 
         let rhs_parts: Vec<&str> = parts[1]
@@ -126,7 +126,7 @@ fn get_transitions() -> Vec<TransitionFunction> {
 
         let rhs = RHS {
             state: rhs_parts[0].to_string(),
-            char: rhs_parts[1].chars().next().unwrap(),
+            replacement: rhs_parts[1].to_string(),
             direction: rhs_parts[2].to_uppercase().chars().next().unwrap(),
         };
 
@@ -136,7 +136,7 @@ fn get_transitions() -> Vec<TransitionFunction> {
 
     functions
 }
-*/
+
 fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
     println!("Enter initial state e.g. q0:");
     let initial: String;
@@ -211,21 +211,30 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
                 .padding(1, 1)
                 .build(),
         );
-        
         let current_input = input[i].clone();
-        let mut tape_cell = Row::new(vec![Cell::new("TAPE")]);
-        let mut head_cell = Row::new(vec![Cell::new("HEAD")]);
-        for (index, &ref c) in input.iter().enumerate() {
-            let cell = Cell::new(c.to_string().as_str());
-            tape_cell.add_cell(cell);
-    
+
+        let mut head_row = Row::new(vec![Cell::new("HEAD")]);
+        for (index, &ref substr) in input.iter().enumerate() {
             let head_symbol = if index == i { "▼" } else { " " };
-            let head_cell_content = Cell::new(head_symbol);
-            head_cell.add_cell(head_cell_content);
+            head_row.add_cell(Cell::new(head_symbol));
+     
+        }
+        table.add_row(head_row);
+
+        for n in 0..chunk {
+            let mut tape_row = Row::new(vec![Cell::new("TAPE")]);
+            for s in &input {
+                let char_at_index = s.chars().nth(n);
+                if let Some(c) = char_at_index {
+                    tape_row.add_cell(Cell::new(c.to_string().as_str()));
+                }
+            }
+            table.add_row(tape_row);
+
         }
 
-        table.add_row(head_cell);
-        table.add_row(tape_cell);
+        
+
 
         table.printstd();
 
@@ -341,54 +350,6 @@ fn demos() -> Vec<Machine> {
     let f4 = TransitionFunction {
         lhs: LHS {
             state: String::from("q0"),
-            input: String::from("aa"),
-        },
-        rhs: RHS {
-            state: String::from("q0"),
-            replacement: String::from("cc"),
-            direction: 'R',
-        },
-    };
-
-    let f5 = TransitionFunction {
-        lhs: LHS {
-            state: String::from("q0"),
-            input: String::from("bb"),
-        },
-        rhs: RHS {
-            state: String::from("q0"),
-            replacement: String::from("bb"),
-            direction: 'R',
-        },
-    };
-
-    let f6 = TransitionFunction {
-        lhs: LHS {
-            state: String::from("q0"),
-            input: String::from("□□"),
-        },
-        rhs: RHS {
-            state: String::from("q1"),
-            replacement: String::from("□□"),
-            direction: 'L',
-        },
-    };
-
-    let s2 = KeyStates {
-        initial_state: String::from("q0"),
-        final_states: vec![String::from("q1")],
-    };
-    let functions_translator1 = vec![f4, f5, f6];
-
-    let demo2 = Machine {
-        transitions: functions_translator1,
-        states: s2,
-        tracks: 2,
-    };
-/* 
-    let f4 = TransitionFunction {
-        lhs: LHS {
-            state: String::from("q0"),
             input: String::from("a"),
         },
         rhs: RHS {
@@ -413,11 +374,11 @@ fn demos() -> Vec<Machine> {
     let f6 = TransitionFunction {
         lhs: LHS {
             state: String::from("q1"),
-            input: 'y',
+            input: String::from("y"),
         },
         rhs: RHS {
             state: String::from("q1"),
-            char: 'y',
+            replacement: String::from("y"),
             direction: 'R',
         },
     };
@@ -425,11 +386,11 @@ fn demos() -> Vec<Machine> {
     let f7 = TransitionFunction {
         lhs: LHS {
             state: String::from("q1"),
-            input: 'b',
+            input: String::from("b"),
         },
         rhs: RHS {
             state: String::from("q2"),
-            char: 'y',
+            replacement: String::from("y"),
             direction: 'L',
         },
     };
@@ -437,11 +398,11 @@ fn demos() -> Vec<Machine> {
     let f8 = TransitionFunction {
         lhs: LHS {
             state: String::from("q2"),
-            input: 'y',
+            input: String::from("y"),
         },
         rhs: RHS {
             state: String::from("q2"),
-            char: 'y',
+            replacement: String::from("y"),
             direction: 'L',
         },
     };
@@ -449,11 +410,11 @@ fn demos() -> Vec<Machine> {
     let f9 = TransitionFunction {
         lhs: LHS {
             state: String::from("q2"),
-            input: 'a',
+            input: String::from("a"),
         },
         rhs: RHS {
             state: String::from("q2"),
-            char: 'a',
+            replacement: String::from("a"),
             direction: 'L',
         },
     };
@@ -461,22 +422,22 @@ fn demos() -> Vec<Machine> {
     let f10 = TransitionFunction {
         lhs: LHS {
             state: String::from("q2"),
-            input: 'x',
+            input: String::from("x"),
         },
         rhs: RHS {
             state: String::from("q0"),
-            char: 'x',
+            replacement: String::from("x"),
             direction: 'R',
         },
     };
     let f11 = TransitionFunction {
         lhs: LHS {
             state: String::from("q0"),
-            input: 'y',
+            input: String::from("y"),
         },
         rhs: RHS {
             state: String::from("q3"),
-            char: 'y',
+            replacement: String::from("y"),
             direction: 'R',
         },
     };
@@ -484,11 +445,11 @@ fn demos() -> Vec<Machine> {
     let f12 = TransitionFunction {
         lhs: LHS {
             state: String::from("q3"),
-            input: 'y',
+            input: String::from("y"),
         },
         rhs: RHS {
             state: String::from("q3"),
-            char: 'y',
+            replacement: String::from("y"),
             direction: 'R',
         },
     };
@@ -496,11 +457,11 @@ fn demos() -> Vec<Machine> {
     let f13 = TransitionFunction {
         lhs: LHS {
             state: String::from("q3"),
-            input: '□',
+            input: String::from("□"),
         },
         rhs: RHS {
             state: String::from("q4"),
-            char: '□',
+            replacement: String::from("□"),
             direction: 'L',
         },
     };
@@ -521,11 +482,11 @@ fn demos() -> Vec<Machine> {
     let f14 = TransitionFunction {
         lhs: LHS {
             state: String::from("q0"),
-            input: '1',
+            input: String::from("1"),
         },
         rhs: RHS {
             state: String::from("q0"),
-            char: 'x',
+            replacement: String::from("x"),
             direction: 'R',
         },
     };
@@ -533,11 +494,11 @@ fn demos() -> Vec<Machine> {
     let f15 = TransitionFunction {
         lhs: LHS {
             state: String::from("q0"),
-            input: '□',
+            input: String::from("□"),
         },
         rhs: RHS {
             state: String::from("q1"),
-            char: '□',
+            replacement: String::from("□"),
             direction: 'L',
         },
     };
@@ -545,11 +506,11 @@ fn demos() -> Vec<Machine> {
     let f16 = TransitionFunction {
         lhs: LHS {
             state: String::from("q1"),
-            input: '1',
+            input: String::from("1"),
         },
         rhs: RHS {
             state: String::from("q1"),
-            char: '1',
+            replacement: String::from("1"),
             direction: 'L',
         },
     };
@@ -557,11 +518,11 @@ fn demos() -> Vec<Machine> {
     let f17 = TransitionFunction {
         lhs: LHS {
             state: String::from("q1"),
-            input: '□',
+            input: String::from("□"),
         },
         rhs: RHS {
             state: String::from("q3"),
-            char: '□',
+            replacement: String::from("□"),
             direction: 'R',
         },
     };
@@ -569,11 +530,11 @@ fn demos() -> Vec<Machine> {
     let f18 = TransitionFunction {
         lhs: LHS {
             state: String::from("q1"),
-            input: 'x',
+            input: String::from("x"),
         },
         rhs: RHS {
             state: String::from("q2"),
-            char: '1',
+            replacement: String::from("1"),
             direction: 'R',
         },
     };
@@ -581,11 +542,11 @@ fn demos() -> Vec<Machine> {
     let f19 = TransitionFunction {
         lhs: LHS {
             state: String::from("q2"),
-            input: '1',
+            input: String::from("1"),
         },
         rhs: RHS {
             state: String::from("q2"),
-            char: '1',
+            replacement: String::from("1"),
             direction: 'R',
         },
     };
@@ -593,11 +554,11 @@ fn demos() -> Vec<Machine> {
     let f20 = TransitionFunction {
         lhs: LHS {
             state: String::from("q2"),
-            input: '□',
+            input: String::from("□"),
         },
         rhs: RHS {
             state: String::from("q1"),
-            char: '1',
+            replacement: String::from("1"),
             direction: 'L',
         },
     };
@@ -614,8 +575,76 @@ fn demos() -> Vec<Machine> {
         states: s3,
         tracks: 1,
     };
-    let demos = vec![demo1, demo2, demo3];
-    */
-    let demos = vec![demo1,demo2];
+    let f21 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q0"),
+            input: String::from("aa"),
+        },
+        rhs: RHS {
+            state: String::from("q0"),
+            replacement: String::from("11"),
+            direction: 'R',
+        },
+    };
+
+    let f22 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q0"),
+            input: String::from("bb"),
+        },
+        rhs: RHS {
+            state: String::from("q0"),
+            replacement: String::from("11"),
+            direction: 'R',
+        },
+    };
+
+    let f23 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q0"),
+            input: String::from("ab"),
+        },
+        rhs: RHS {
+            state: String::from("q0"),
+            replacement: String::from("ab"),
+            direction: 'R',
+        },
+    };
+    let f24 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q0"),
+            input: String::from("ba"),
+        },
+        rhs: RHS {
+            state: String::from("q0"),
+            replacement: String::from("ba"),
+            direction: 'R',
+        },
+    };
+    let f25 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q0"),
+            input: String::from("□□"),
+        },
+        rhs: RHS {
+            state: String::from("q1"),
+            replacement: String::from("□□"),
+            direction: 'L',
+        },
+    };
+
+    let s4 = KeyStates {
+        initial_state: String::from("q0"),
+        final_states: vec![String::from("q1")],
+    };
+    let functions_translator1 = vec![f21, f22, f23];
+
+    let demo4 = Machine {
+        transitions: functions_translator1,
+        states: s4,
+        tracks: 3,
+    };
+    let demos = vec![demo1, demo2, demo3, demo4];
+
     demos
 }
