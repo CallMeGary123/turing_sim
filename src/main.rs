@@ -1,7 +1,7 @@
-use regex::Regex;
 use std::env;
 use std::io::{self, Write};
-use prettytable::{format,ptable, row, table, Cell, Row, Table};
+use regex::Regex;
+use prettytable::{format, Cell, Row, Table};
 
 #[derive(PartialEq)]
 struct LHS {
@@ -65,12 +65,15 @@ fn main() {
         println!("demo 0 : translates every 'a' to 'b'");
         println!("demo 1 : accepts strings in form of a(n)b(n)");
         println!("demo 2 : copies strings of '1'");
+        println!("demo 3 : checks two tracks of 'a' & 'b' and finds where tracks match");
         println!("\n*Run without options to input your own turing machine")
     } else {
         // Default behavior when no arguments are provided
         println!("run with 'cargo run -- help' or 'turing_sim.exe help' to see the help menu");
-        let tracks: usize = get_input().parse().unwrap(); 
-        let transitions = get_transitions();
+        print!("Number of tracks: ");
+        io::stdout().flush().expect("failed to flush");
+        let tracks: usize = get_input().trim().parse().unwrap(); 
+        let transitions = get_transitions(tracks);
         let states = get_states(&transitions);
         let turing_machine = Machine {
             transitions: transitions,
@@ -85,7 +88,7 @@ fn main() {
 
 // main functions
 
-fn get_transitions() -> Vec<TransitionFunction> {
+fn get_transitions(chunk: usize) -> Vec<TransitionFunction> {
     let mut functions = Vec::new();
 
     println!("Enter functions e.g δ(q1,a)=(q2,b,L) [enter 'END' if you don't want to add anymore functions]: ");
@@ -130,6 +133,10 @@ fn get_transitions() -> Vec<TransitionFunction> {
             direction: rhs_parts[2].to_uppercase().chars().next().unwrap(),
         };
 
+        if (lhs.input != "□".repeat(chunk) && lhs.input.len() != chunk) || (rhs.replacement != "□".repeat(chunk) && rhs.replacement.len() != chunk) {
+            println!("invalid format... length mismatch (function was not added)");
+            continue;
+        } 
         let current_function = TransitionFunction { lhs, rhs };
         functions.push(current_function);
     }
@@ -214,7 +221,7 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
         let current_input = input[i].clone();
 
         let mut head_row = Row::new(vec![Cell::new("HEAD")]);
-        for (index, &ref substr) in input.iter().enumerate() {
+        for (index, _) in input.iter().enumerate() {
             let head_symbol = if index == i { "▼" } else { " " };
             head_row.add_cell(Cell::new(head_symbol));
      
@@ -281,7 +288,7 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
 
 // helper functions
 fn function_validator(function: &str) -> bool {
-    let re = Regex::new(r"\(.*\,(.|blank)\)\=\(.*\,(.|blank)\,(L|R|l|r)\)").unwrap();
+    let re = Regex::new(r"\(.*\,(.*)\)\=\(.*\,(.*)\,(L|R|l|r)\)").unwrap();
     re.is_match(function)
 }
 
@@ -341,7 +348,7 @@ fn demos() -> Vec<Machine> {
     };
     let functions_translator = vec![f1, f2, f3];
 
-    let demo1 = Machine {
+    let demo0 = Machine {
         transitions: functions_translator,
         states: s1,
         tracks: 1,
@@ -473,7 +480,7 @@ fn demos() -> Vec<Machine> {
 
     let functions_accepter = vec![f4, f5, f6, f7, f8, f9, f10, f11, f12, f13];
 
-    let demo2 = Machine {
+    let demo1 = Machine {
         transitions: functions_accepter,
         states: s2,
         tracks: 1,
@@ -570,7 +577,7 @@ fn demos() -> Vec<Machine> {
 
     let functions_copier = vec![f14, f15, f16, f17, f18, f19, f20];
 
-    let demo3 = Machine {
+    let demo2 = Machine {
         transitions: functions_copier,
         states: s3,
         tracks: 1,
@@ -637,14 +644,14 @@ fn demos() -> Vec<Machine> {
         initial_state: String::from("q0"),
         final_states: vec![String::from("q1")],
     };
-    let functions_translator1 = vec![f21, f22, f23];
+    let functions_translator1 = vec![f21, f22, f23, f24, f25];
 
-    let demo4 = Machine {
+    let demo3 = Machine {
         transitions: functions_translator1,
         states: s4,
-        tracks: 3,
+        tracks: 2,
     };
-    let demos = vec![demo1, demo2, demo3, demo4];
+    let demos = vec![demo0, demo1, demo2, demo3];
 
     demos
 }
