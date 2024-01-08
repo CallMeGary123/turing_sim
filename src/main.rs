@@ -708,7 +708,326 @@ fn demos() -> Vec<Machine> {
         states: s4,
         tracks: 2,
     };
-    let demos = vec![demo0, demo1, demo2, demo3];
+    // ref: https://www.geeksforgeeks.org/turing-machine-for-multiplication/
+    let f26 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q0"),
+            input: String::from("0"),
+        },
+        rhs: RHS {
+            state: String::from("q0"),
+            replacement: String::from("0"),
+            direction: 'R',
+        },
+    };
+    let f27 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q0"),
+            input: String::from("C"),
+        },
+        rhs: RHS {
+            state: String::from("q1"),
+            replacement: String::from("C"),
+            direction: 'R',
+        },
+    };
+    let f28 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q1"),
+            input: String::from("0"),
+        },
+        rhs: RHS {
+            state: String::from("q1"),
+            replacement: String::from("0"),
+            direction: 'R',
+        },
+    };
+    let f29 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q1"),
+            input: String::from("B"),
+        },
+        rhs: RHS {
+            state: String::from("q2"),
+            replacement: String::from("C"),
+            direction: 'L',
+        },
+    };
+    let f30 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q2"),
+            input: String::from("0"),
+        },
+        rhs: RHS {
+            state: String::from("q2"),
+            replacement: String::from("0"),
+            direction: 'L',
+        },
+    };
+    let f31 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q2"),
+            input: String::from("C"),
+        },
+        rhs: RHS {
+            state: String::from("q3"),
+            replacement: String::from("C"),
+            direction: 'R',
+        },
+    };
+    let f32 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q3"),
+            input: String::from("X"),
+        },
+        rhs: RHS {
+            state: String::from("q3"),
+            replacement: String::from("X"),
+            direction: 'R',
+        },
+    };
+    let f33 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q3"),
+            input: String::from("0"),
+        },
+        rhs: RHS {
+            state: String::from("q4"),
+            replacement: String::from("X"),
+            direction: 'L',
+        },
+    };
+    let f34 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q3"),
+            input: String::from("C"),
+        },
+        rhs: RHS {
+            state: String::from("q12"),
+            replacement: String::from("B"),
+            direction: 'R',
+        },
+    };
+    let f35 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q4"),
+            input: String::from("X"),
+        },
+        rhs: RHS {
+            state: String::from("q4"),
+            replacement: String::from("X"),
+            direction: 'L',
+        },
+    };
+    let f36 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q4"),
+            input: String::from("C"),
+        },
+        rhs: RHS {
+            state: String::from("q5"),
+            replacement: String::from("C"),
+            direction: 'L',
+        },
+    };
+    let f37 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q5"),
+            input: String::from("Y"),
+        },
+        rhs: RHS {
+            state: String::from("q5"),
+            replacement: String::from("Y"),
+            direction: 'L',
+        },
+    };
+    let f38 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q5"),
+            input: String::from("0"),
+        },
+        rhs: RHS {
+            state: String::from("q6"),
+            replacement: String::from("Y"),
+            direction: 'R',
+        },
+    };
+    let f39 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q5"),
+            input: String::from("B"),
+        },
+        rhs: RHS {
+            state: String::from("q11"),
+            replacement: String::from("B"),
+            direction: 'R',
+        },
+    };
+    let f40 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q6"),
+            input: String::from("Y"),
+        },
+        rhs: RHS {
+            state: String::from("q6"),
+            replacement: String::from("Y"),
+            direction: 'R',
+        },
+    };
+    let f41 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q6"),
+            input: String::from("C"),
+        },
+        rhs: RHS {
+            state: String::from("q7"),
+            replacement: String::from("C"),
+            direction: 'R',
+        },
+    };
+    let f42 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q7"),
+            input: String::from("0"),
+        },
+        rhs: RHS {
+            state: String::from("q7"),
+            replacement: String::from("0"),
+            direction: 'R',
+        },
+    };
+    let f43 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q7"),
+            input: String::from("X"),
+        },
+        rhs: RHS {
+            state: String::from("q7"),
+            replacement: String::from("X"),
+            direction: 'R',
+        },
+    };
+    let f44 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q7"),
+            input: String::from("C"),
+        },
+        rhs: RHS {
+            state: String::from("q8"),
+            replacement: String::from("C"),
+            direction: 'R',
+        },
+    };
+    let f45 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q8"),
+            input: String::from("0"),
+        },
+        rhs: RHS {
+            state: String::from("q8"),
+            replacement: String::from("0"),
+            direction: 'R',
+        },
+    };
+    let f46 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q8"),
+            input: String::from("B"),
+        },
+        rhs: RHS {
+            state: String::from("q9"),
+            replacement: String::from("0"),
+            direction: 'L',
+        },
+    };
+    let f47 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q9"),
+            input: String::from("0"),
+        },
+        rhs: RHS {
+            state: String::from("q9"),
+            replacement: String::from("0"),
+            direction: 'L',
+        },
+    };
+    let f48 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q9"),
+            input: String::from("C"),
+        },
+        rhs: RHS {
+            state: String::from("q10"),
+            replacement: String::from("C"),
+            direction: 'L',
+        },
+    };
+    let f49 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q10"),
+            input: String::from("0"),
+        },
+        rhs: RHS {
+            state: String::from("q10"),
+            replacement: String::from("0"),
+            direction: 'L',
+        },
+    };
+    let f50 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q10"),
+            input: String::from("X"),
+        },
+        rhs: RHS {
+            state: String::from("q10"),
+            replacement: String::from("X"),
+            direction: 'L',
+        },
+    };
+    let f51 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q10"),
+            input: String::from("C"),
+        },
+        rhs: RHS {
+            state: String::from("q5"),
+            replacement: String::from("C"),
+            direction: 'L',
+        },
+    };
+    let f52 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q11"),
+            input: String::from("Y"),
+        },
+        rhs: RHS {
+            state: String::from("q11"),
+            replacement: String::from("0"),
+            direction: 'R',
+        },
+    };
+    let f53 = TransitionFunction {
+        lhs: LHS {
+            state: String::from("q11"),
+            input: String::from("C"),
+        },
+        rhs: RHS {
+            state: String::from("q3"),
+            replacement: String::from("C"),
+            direction: 'R',
+        },
+    };
+    let s5 = KeyStates {
+        initial_state: String::from("q0"),
+        final_states: vec![String::from("q12")],
+    };
+    let functions_mult = vec![f26, f27, f28, f29, f30,f31,f32,f33,f34,f35,f36,f37,f38,f39,f40,f41,f42,f43,f44,f45,f46,f47,f48,f49,f50,f51,f52,f53];
+    let demo4 = Machine {
+        transitions: functions_mult,
+        states: s5,
+        tracks: 1,
+    };
+    let demos = vec![demo0, demo1, demo2, demo3, demo4];
 
     demos
 }
