@@ -52,9 +52,35 @@ fn main() {
 
         if demo_index < dem.len() {
             let demo = &dem[demo_index];
-            println!("\nInput:");
-            let input = get_input().replace("\r\n", "");
-            parse(input, &demo.transitions, &demo.states, demo.tracks);
+            print!("Track 1: ");
+            io::stdout().flush().expect("failed to flush");
+            let mut inputs: Vec<String> = vec![get_input().trim().to_string().replace("\r\n", "")];
+
+            // Get the remaining inputs, checking if they have the same length as the first one
+            for i in 1..demo.tracks {
+                loop {
+                    print!("Track {}: ", i + 1);
+                    io::stdout().flush().expect("failed to flush");
+                    let input = get_input().trim().to_string().replace("\r\n", "");
+                    if input.len() == inputs[0].len() {
+                        inputs.push(input);
+                        break;
+                    } else {
+                        println!("Error: Tracks must have the same length");
+                    }
+                }
+            }
+
+            // Combine the inputs
+            let combined: String = (0..inputs[0].len())
+                .map(|i| {
+                    inputs
+                        .iter()
+                        .map(|s| s.chars().nth(i).unwrap())
+                        .collect::<String>()
+                })
+                .collect();
+            parse(combined, &demo.transitions, &demo.states, demo.tracks);
         } else {
             println!("Demo index out of bounds");
         }
@@ -81,10 +107,36 @@ fn main() {
             states: states,
             tracks: tracks,
         };
-        println!("\nInput:");
-        let input = get_input().replace("\r\n", "");
+        print!("Track 1: ");
+        io::stdout().flush().expect("failed to flush");
+        let mut inputs: Vec<String> = vec![get_input()];
+
+        // Get the remaining inputs, checking if they have the same length as the first one
+        for i in 1..tracks {
+            loop {
+                print!("Track {}: ", i + 1);
+                io::stdout().flush().expect("failed to flush");
+                let input = get_input().trim().to_string().replace("\r\n", "");
+                if input.len() == inputs[0].len() {
+                    inputs.push(input);
+                    break;
+                } else {
+                    println!("Error: Tracks must have the same length");
+                }
+            }
+        }
+
+        // Combine the inputs
+        let combined: String = (0..inputs[0].len())
+            .map(|i| {
+                inputs
+                    .iter()
+                    .map(|s| s.chars().nth(i).unwrap())
+                    .collect::<String>()
+            })
+            .collect();
         parse(
-            input,
+            combined,
             &turing_machine.transitions,
             &turing_machine.states,
             turing_machine.tracks,
