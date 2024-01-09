@@ -110,7 +110,7 @@ fn main() {
         };
         print!("Tape (Track 1): ");
         io::stdout().flush().expect("failed to flush");
-        let mut inputs: Vec<String> = vec![get_input()];
+        let mut inputs: Vec<String> = vec![get_input().trim().to_string().replace("\r\n", "")];
 
         // Get the remaining inputs, checking if they have the same length as the first one
         for i in 1..tracks {
@@ -243,9 +243,6 @@ fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
 
 fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, chunk: usize) {
     println!("\nparsing...");
-    //let input = format!("□{}□", input);
-    //let mut input: Vec<char> = input.chars().collect();
-
     let mut input: Vec<String> = input
         .chars()
         .collect::<String>()
@@ -256,7 +253,6 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
         .collect();
     input.push(String::from("□").repeat(chunk));
     input.insert(0, String::from("□").repeat(chunk));
-
     let mut i = 1;
     let mut current_state = states.initial_state.clone();
 
