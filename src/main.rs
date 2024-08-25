@@ -52,9 +52,50 @@ fn main() {
 
         if demo_index < dem.len() {
             let demo = &dem[demo_index];
-            println!("\nInput:");
-            let input = get_input().replace("\r\n", "");
-            parse(input, &demo.transitions, &demo.states, demo.tracks);
+            loop {
+                print!("Track 1: ");
+                io::stdout().flush().expect("failed to flush");
+                let mut inputs: Vec<String> =
+                    vec![get_input().trim().to_string().replace("\r\n", "")];
+
+                // Get the remaining inputs, checking if they have the same length as the first one
+                for i in 1..demo.tracks {
+                    loop {
+                        print!("Track {}: ", i + 1);
+                        io::stdout().flush().expect("failed to flush");
+                        let input = get_input().trim().to_string().replace("\r\n", "");
+                        if input.len() == inputs[0].len() {
+                            inputs.push(input);
+                            break;
+                        } else {
+                            println!("Error: Tracks must have the same length");
+                        }
+                    }
+                }
+
+                // Combine the inputs
+                let combined: String = (0..inputs[0].len())
+                    .map(|i| {
+                        inputs
+                            .iter()
+                            .map(|s| s.chars().nth(i).unwrap())
+                            .collect::<String>()
+                    })
+                    .collect();
+                parse(combined, &demo.transitions, &demo.states, demo.tracks);
+                println!("Parse another string? (Y/N)");
+                if get_input()
+                    .trim()
+                    .to_string()
+                    .replace("\r\n", "")
+                    .to_uppercase()
+                    == "Y"
+                {
+                    continue;
+                } else {
+                    break;
+                }
+            }
         } else {
             println!("Demo index out of bounds");
         }
@@ -82,14 +123,54 @@ fn main() {
             states: states,
             tracks: tracks,
         };
-        println!("\nInput:");
-        let input = get_input().replace("\r\n", "");
-        parse(
-            input,
-            &turing_machine.transitions,
-            &turing_machine.states,
-            turing_machine.tracks,
-        );
+        loop {
+            print!("Track 1: ");
+            io::stdout().flush().expect("failed to flush");
+            let mut inputs: Vec<String> = vec![get_input().trim().to_string().replace("\r\n", "")];
+
+            // Get the remaining inputs, checking if they have the same length as the first one
+            for i in 1..tracks {
+                loop {
+                    print!("Tape (Track {}): ", i + 1);
+                    io::stdout().flush().expect("failed to flush");
+                    let input = get_input().trim().to_string().replace("\r\n", "");
+                    if input.len() == inputs[0].len() {
+                        inputs.push(input);
+                        break;
+                    } else {
+                        println!("Error: Tracks must have the same length");
+                    }
+                }
+            }
+
+            // Combine the inputs
+            let combined: String = (0..inputs[0].len())
+                .map(|i| {
+                    inputs
+                        .iter()
+                        .map(|s| s.chars().nth(i).unwrap())
+                        .collect::<String>()
+                })
+                .collect();
+            parse(
+                combined,
+                &turing_machine.transitions,
+                &turing_machine.states,
+                turing_machine.tracks,
+            );
+            println!("Parse another string? (Y/N)");
+            if get_input()
+                .trim()
+                .to_string()
+                .replace("\r\n", "")
+                .to_uppercase()
+                == "Y"
+            {
+                continue;
+            } else {
+                break;
+            }
+        }
     }
 }
 
@@ -191,9 +272,6 @@ fn get_states(transitions: &[TransitionFunction]) -> KeyStates {
 
 fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, chunk: usize) {
     println!("\nparsing...");
-    //let input = format!("□{}□", input);
-    //let mut input: Vec<char> = input.chars().collect();
-
     let mut input: Vec<String> = input
         .chars()
         .collect::<String>()
@@ -204,7 +282,6 @@ fn parse(input: String, transitions: &[TransitionFunction], states: &KeyStates, 
         .collect();
     input.push(String::from("□").repeat(chunk));
     input.insert(0, String::from("□").repeat(chunk));
-
     let mut i = 1;
     let mut current_state = states.initial_state.clone();
 
@@ -970,14 +1047,16 @@ fn demos() -> Vec<Machine> {
         initial_state: String::from("q0"),
         final_states: vec![String::from("q12")],
     };
-    let functions_mult = vec![f26, f27, f28, f29, f30,f31,f32,f33,f34,f35,f36,f37,f38,f39,f40,f41,f42,f43,f44,f45,f46,f47,f48,f49,f50,f51,f52,f53];
+    let functions_mult = vec![
+        f26, f27, f28, f29, f30, f31, f32, f33, f34, f35, f36, f37, f38, f39, f40, f41, f42, f43,
+        f44, f45, f46, f47, f48, f49, f50, f51, f52, f53,
+    ];
     let demo4 = Machine {
         transitions: functions_mult,
         states: s5,
         tracks: 1,
     };
     let demos = vec![demo0, demo1, demo2, demo3, demo4];
-
 
     demos
 }
