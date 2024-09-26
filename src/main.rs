@@ -38,8 +38,95 @@ struct Machine {
 // main
 fn main() {
     let args: Vec<String> = env::args().collect();
+    let arg_len = args.len();
+    match arg_len {
+        1 => default_behaviour(),
+        3 => demo_behaviour(args),
+        2 | _ => help_behaviour(args),
+    }
+}
 
-    if args.len() >= 3 && args[1] == "demo" {
+// main functions
+fn default_behaviour() {
+    println!("Turing Machine Simulator");
+    print!("Number of tracks: ");
+    io::stdout().flush().expect("failed to flush");
+    let tracks: usize = get_input().trim().parse().unwrap();
+    let transitions = get_transitions(tracks);
+    let states = get_states(&transitions);
+    let turing_machine = Machine {
+        transitions: transitions,
+        states: states,
+        tracks: tracks,
+    };
+    loop {
+        print!("Track 1: ");
+        io::stdout().flush().expect("failed to flush");
+        let mut inputs: Vec<String> = vec![get_input().trim().to_string().replace("\r\n", "")];
+
+        // Get the remaining inputs, checking if they have the same length as the first one
+        for i in 1..tracks {
+            loop {
+                print!("Tape (Track {}): ", i + 1);
+                io::stdout().flush().expect("failed to flush");
+                let input = get_input().trim().to_string().replace("\r\n", "");
+                if input.len() == inputs[0].len() {
+                    inputs.push(input);
+                    break;
+                } else {
+                    println!("Error: Tracks must have the same length");
+                }
+            }
+        }
+
+        // Combine the inputs
+        let combined: String = (0..inputs[0].len())
+            .map(|i| {
+                inputs
+                    .iter()
+                    .map(|s| s.chars().nth(i).unwrap())
+                    .collect::<String>()
+            })
+            .collect();
+        parse(
+            combined,
+            &turing_machine.transitions,
+            &turing_machine.states,
+            turing_machine.tracks,
+        );
+        println!("Parse another string? (Y/N)");
+        if get_input()
+            .trim()
+            .to_string()
+            .replace("\r\n", "")
+            .to_uppercase()
+            == "Y"
+        {
+            continue;
+        } else {
+            break;
+        }
+    }
+}
+
+fn help_behaviour(args: Vec<String>) {
+    if args[1] != "-help" {
+        println!("{}", "Error: Unkown option".red());
+    }
+    println!("Turing Machine Simulator");
+    println!("Usage:\ncargo run -- <option>\nturing_sim.exe <option>");
+    println!("\nOptions:");
+    println!("-help : Shows help menu");
+    println!("-demo 0 : translates every 'a' to 'b'");
+    println!("-demo 1 : accepts strings in form of a(n)b(n)");
+    println!("-demo 2 : copies strings of '1'");
+    println!("-demo 3 : checks two tracks of 'a' & 'b' and finds where tracks match");
+    println!("-demo 4 : a turing machine for multiplication (e.g. input: 11*11)");
+    println!("\n*Run without options to input your own turing machine")
+}
+
+fn demo_behaviour(args: Vec<String>) {
+    if args[1] == "-demo" {
         let demo_index: usize = match args[2].parse() {
             Ok(idx) => idx,
             Err(_) => {
@@ -99,83 +186,10 @@ fn main() {
         } else {
             println!("Demo index out of bounds");
         }
-    } else if args.len() == 2 {
-        println!("Turing Machine Simulator");
-        println!("Usage:\ncargo run -- <option>\nturing_sim.exe <option>");
-        println!("\nOptions:");
-        println!("help : Shows help menu");
-        println!("demo 0 : translates every 'a' to 'b'");
-        println!("demo 1 : accepts strings in form of a(n)b(n)");
-        println!("demo 2 : copies strings of '1'");
-        println!("demo 3 : checks two tracks of 'a' & 'b' and finds where tracks match");
-        println!("demo 4 : a turing machine for multiplication (e.g. input: 11*11)");
-        println!("\n*Run without options to input your own turing machine")
     } else {
-        // Default behavior when no arguments are provided
-        println!("run with 'cargo run -- help' or 'turing_sim.exe help' to see the help menu");
-        print!("Number of tracks: ");
-        io::stdout().flush().expect("failed to flush");
-        let tracks: usize = get_input().trim().parse().unwrap();
-        let transitions = get_transitions(tracks);
-        let states = get_states(&transitions);
-        let turing_machine = Machine {
-            transitions: transitions,
-            states: states,
-            tracks: tracks,
-        };
-        loop {
-            print!("Track 1: ");
-            io::stdout().flush().expect("failed to flush");
-            let mut inputs: Vec<String> = vec![get_input().trim().to_string().replace("\r\n", "")];
-
-            // Get the remaining inputs, checking if they have the same length as the first one
-            for i in 1..tracks {
-                loop {
-                    print!("Tape (Track {}): ", i + 1);
-                    io::stdout().flush().expect("failed to flush");
-                    let input = get_input().trim().to_string().replace("\r\n", "");
-                    if input.len() == inputs[0].len() {
-                        inputs.push(input);
-                        break;
-                    } else {
-                        println!("Error: Tracks must have the same length");
-                    }
-                }
-            }
-
-            // Combine the inputs
-            let combined: String = (0..inputs[0].len())
-                .map(|i| {
-                    inputs
-                        .iter()
-                        .map(|s| s.chars().nth(i).unwrap())
-                        .collect::<String>()
-                })
-                .collect();
-            parse(
-                combined,
-                &turing_machine.transitions,
-                &turing_machine.states,
-                turing_machine.tracks,
-            );
-            println!("Parse another string? (Y/N)");
-            if get_input()
-                .trim()
-                .to_string()
-                .replace("\r\n", "")
-                .to_uppercase()
-                == "Y"
-            {
-                continue;
-            } else {
-                break;
-            }
-        }
+        help_behaviour(args);
     }
 }
-
-// main functions
-
 fn get_transitions(chunk: usize) -> Vec<TransitionFunction> {
     let mut functions = Vec::new();
 
