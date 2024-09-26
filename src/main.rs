@@ -2,7 +2,9 @@ use colored::*;
 use prettytable::{format, Cell, Row, Table};
 use regex::Regex;
 use std::env;
-use std::io::{self, Write};
+use std::io::{self, Write, BufReader};
+use std::fs::File;
+use csv::Reader;
 
 #[derive(PartialEq)]
 struct LHS {
@@ -41,7 +43,7 @@ fn main() {
     let arg_len = args.len();
     match arg_len {
         1 => default_behaviour(),
-        3 => demo_behaviour(args),
+        3 => option_behaviour(args),
         2 | _ => help_behaviour(args),
     }
 }
@@ -117,6 +119,7 @@ fn help_behaviour(args: Vec<String>) {
     println!("Usage:\ncargo run -- <option>\nturing_sim.exe <option>");
     println!("\nOptions:");
     println!("-help : Shows help menu");
+    println!("-csv <path> : loads a transition functions from csv file");
     println!("-demo 0 : translates every 'a' to 'b'");
     println!("-demo 1 : accepts strings in form of a(n)b(n)");
     println!("-demo 2 : copies strings of '1'");
@@ -125,71 +128,93 @@ fn help_behaviour(args: Vec<String>) {
     println!("\n*Run without options to input your own turing machine")
 }
 
-fn demo_behaviour(args: Vec<String>) {
-    if args[1] == "-demo" {
-        let demo_index: usize = match args[2].parse() {
-            Ok(idx) => idx,
-            Err(_) => {
-                println!("Invalid demo index");
-                return;
-            }
-        };
+fn option_behaviour(args: Vec<String>){
 
-        let dem = demos();
-
-        if demo_index < dem.len() {
-            let demo = &dem[demo_index];
-            loop {
-                print!("Track 1: ");
-                io::stdout().flush().expect("failed to flush");
-                let mut inputs: Vec<String> =
-                    vec![get_input().trim().to_string().replace("\r\n", "")];
-
-                // Get the remaining inputs, checking if they have the same length as the first one
-                for i in 1..demo.tracks {
-                    loop {
-                        print!("Track {}: ", i + 1);
-                        io::stdout().flush().expect("failed to flush");
-                        let input = get_input().trim().to_string().replace("\r\n", "");
-                        if input.len() == inputs[0].len() {
-                            inputs.push(input);
-                            break;
-                        } else {
-                            println!("Error: Tracks must have the same length");
-                        }
-                    }
-                }
-
-                // Combine the inputs
-                let combined: String = (0..inputs[0].len())
-                    .map(|i| {
-                        inputs
-                            .iter()
-                            .map(|s| s.chars().nth(i).unwrap())
-                            .collect::<String>()
-                    })
-                    .collect();
-                parse(combined, &demo.transitions, &demo.states, demo.tracks);
-                println!("Parse another string? (Y/N)");
-                if get_input()
-                    .trim()
-                    .to_string()
-                    .replace("\r\n", "")
-                    .to_uppercase()
-                    == "Y"
-                {
-                    continue;
-                } else {
-                    break;
-                }
-            }
-        } else {
-            println!("Demo index out of bounds");
+    if args[1] == "-demo"{
+        demo_behaviour(args);
+    }
+    else if args[1] == "-csv" {
+        if let Err(e) = csv_behaviour(args) {
+            eprintln!("Error: {}", e);
         }
     } else {
         help_behaviour(args);
     }
 }
+
+fn demo_behaviour(args: Vec<String>) {
+    let demo_index: usize = match args[2].parse() {
+        Ok(idx) => idx,
+        Err(_) => {
+            println!("Invalid demo index");
+            return;
+        }
+    };
+    let dem = demos();
+    if demo_index < dem.len() {
+        let demo = &dem[demo_index];
+        loop {
+            print!("Track 1: ");
+            io::stdout().flush().expect("failed to flush");
+            let mut inputs: Vec<String> =
+                vec![get_input().trim().to_string().replace("\r\n", "")];
+            // Get the remaining inputs, checking if they have the same length as the first one
+            for i in 1..demo.tracks {
+                loop {
+                    print!("Track {}: ", i + 1);
+                    io::stdout().flush().expect("failed to flush");
+                    let input = get_input().trim().to_string().replace("\r\n", "");
+                    if input.len() == inputs[0].len() {
+                        inputs.push(input);
+                        break;
+                    } else {
+                        println!("Error: Tracks must have the same length");
+                    }
+                }
+            }
+            // Combine the inputs
+            let combined: String = (0..inputs[0].len())
+                .map(|i| {
+                    inputs
+                        .iter()
+                        .map(|s| s.chars().nth(i).unwrap())
+                        .collect::<String>()
+                })
+                .collect();
+            parse(combined, &demo.transitions, &demo.states, demo.tracks);
+            println!("Parse another string? (Y/N)");
+            if get_input()
+                .trim()
+                .to_string()
+                .replace("\r\n", "")
+                .to_uppercase()
+                == "Y"
+            {
+                continue;
+            } else {
+                break;
+            }
+        }
+    } else {
+        println!("Demo index out of bounds");
+    }
+
+}
+
+fn csv_behaviour(args: Vec<String>) -> io::Result<()> {
+        let file_path = args[2].clone();
+        let file = File::open(file_path)?;
+        let reader = BufReader::new(file);
+        let mut rdr = Reader::from_reader(reader);
+        let headers = rdr.headers()?;
+        println!("{:?}", headers);
+        for result in rdr.records() {
+            let record = result?;
+            println!("{:?}", record);
+    }
+    Ok(())
+}
+
 fn get_transitions(chunk: usize) -> Vec<TransitionFunction> {
     let mut functions = Vec::new();
 
