@@ -1,2 +1,8 @@
 lhs_state,input,rhs_state,replacement,direction
-this,is,a,simple,test
+q0,1,q0,1,R
+q0,0,q1,1,R
+q1,1,q1,1,R
+q1,□,q2,□,L
+q2,1,q3,0,L
+q3,1,q3,1,L
+q3,□,q4,□,R
