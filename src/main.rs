@@ -1,10 +1,11 @@
 use colored::*;
+use csv::Reader;
+use csv::StringRecord;
 use prettytable::{format, Cell, Row, Table};
 use regex::Regex;
 use std::env;
-use std::io::{self, Write, BufReader};
 use std::fs::File;
-use csv::Reader;
+use std::io::{self, Write};
 
 #[derive(PartialEq)]
 struct LHS {
@@ -128,12 +129,10 @@ fn help_behaviour(args: Vec<String>) {
     println!("\n*Run without options to input your own turing machine")
 }
 
-fn option_behaviour(args: Vec<String>){
-
-    if args[1] == "-demo"{
+fn option_behaviour(args: Vec<String>) {
+    if args[1] == "-demo" {
         demo_behaviour(args);
-    }
-    else if args[1] == "-csv" {
+    } else if args[1] == "-csv" {
         if let Err(e) = csv_behaviour(args) {
             eprintln!("Error: {}", e);
         }
@@ -156,8 +155,7 @@ fn demo_behaviour(args: Vec<String>) {
         loop {
             print!("Track 1: ");
             io::stdout().flush().expect("failed to flush");
-            let mut inputs: Vec<String> =
-                vec![get_input().trim().to_string().replace("\r\n", "")];
+            let mut inputs: Vec<String> = vec![get_input().trim().to_string().replace("\r\n", "")];
             // Get the remaining inputs, checking if they have the same length as the first one
             for i in 1..demo.tracks {
                 loop {
@@ -198,20 +196,141 @@ fn demo_behaviour(args: Vec<String>) {
     } else {
         println!("Demo index out of bounds");
     }
-
 }
 
 fn csv_behaviour(args: Vec<String>) -> io::Result<()> {
-        let file_path = args[2].clone();
-        let file = File::open(file_path)?;
-        let reader = BufReader::new(file);
-        let mut rdr = Reader::from_reader(reader);
-        let headers = rdr.headers()?;
-        println!("{:?}", headers);
-        for result in rdr.records() {
-            let record = result?;
-            println!("{:?}", record);
+    println!("Turing Machine Simulator");
+    print!("Number of tracks: ");
+    io::stdout().flush().expect("failed to flush");
+
+    let file_path = args[2].clone();
+    let file = File::open(file_path)?;
+    let mut rdr = Reader::from_reader(file);
+    let headers = rdr.headers()?;
+    let valid_headers = StringRecord::from(vec![
+        "lhs_state",
+        "input",
+        "rhs_state",
+        "replacement",
+        "direction",
+    ]);
+    if headers.clone() != valid_headers {
+        println!("Invalid headers.\n Headers must be \"lhs_state\", \"input\", \"rhs_state\", \"replacement\", \"direction\"");
+        return Err(io::Error::new(io::ErrorKind::Other, "Invalid headers"));
     }
+
+    let tracks: usize = get_input().trim().parse().unwrap();
+    let mut functions: Vec<TransitionFunction> = Vec::new();
+
+    for result in rdr.records() {
+        let record = result?;
+        let Some(lhs_state) = record.get(0) else {
+            panic!("No value found")
+        };
+        let Some(input) = record.get(1) else {
+            panic!("No value found")
+        };
+        let Some(rhs_state) = record.get(2) else {
+            panic!("No value found")
+        };
+        let Some(replacement) = record.get(3) else {
+            panic!("No value found")
+        };
+        let Some(direction_str) = record.get(4) else {
+            panic!("No value found")
+        };
+        let direction: Vec<char> = direction_str.to_string().chars().collect();
+        if direction.len() != 1 {
+            println!("Invalid Direction (Direction is more than a character)");
+            println!("{:?}", record);
+            break;
+        }
+        let direction_char: Vec<char> = direction[0].to_uppercase().collect();
+        if direction_char[0] == 'R' || direction_char[0] == 'L' {
+            let lhs = LHS {
+                state: lhs_state.to_string(),
+                input: input.to_string(),
+            };
+            let rhs = RHS {
+                state: rhs_state.to_string(),
+                replacement: replacement.to_string(),
+                direction: direction_char[0],
+            };
+            let current_function = TransitionFunction { lhs, rhs };
+            println!(
+                "Transition function: δ({},{})=({},{},{})",
+                current_function.lhs.state,
+                current_function.lhs.input,
+                current_function.rhs.state,
+                current_function.rhs.replacement,
+                current_function.rhs.direction
+            );
+            functions.push(current_function);
+        } else {
+            println!("Invalid Direction (Direction is not L or R)");
+            println!("{:?}", record);
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Invalid Data in direction field",
+            ));
+        }
+    }
+    let key_states = get_states(&functions);
+    let turing_machine = Machine {
+        transitions: functions,
+        tracks: tracks,
+        states: key_states,
+    };
+
+    loop {
+        print!("Track 1: ");
+        io::stdout().flush().expect("failed to flush");
+        let mut inputs: Vec<String> = vec![get_input().trim().to_string().replace("\r\n", "")];
+
+        // Get the remaining inputs, checking if they have the same length as the first one
+        for i in 1..tracks {
+            loop {
+                print!("Tape (Track {}): ", i + 1);
+                io::stdout().flush().expect("failed to flush");
+                let input = get_input().trim().to_string().replace("\r\n", "");
+                if input.len() == inputs[0].len() {
+                    inputs.push(input);
+                    break;
+                } else {
+                    println!("Error: Tracks must have the same length");
+                }
+            }
+        }
+
+        // Combine the inputs
+        let combined: String = (0..inputs[0].len())
+            .map(|i| {
+                inputs
+                    .iter()
+                    .map(|s| s.chars().nth(i).unwrap())
+                    .collect::<String>()
+            })
+            .collect();
+        parse(
+            combined,
+            &turing_machine.transitions,
+            &turing_machine.states,
+            turing_machine.tracks,
+        );
+        println!("Parse another string? (Y/N)");
+        if get_input()
+            .trim()
+            .to_string()
+            .replace("\r\n", "")
+            .to_uppercase()
+            == "Y"
+        {
+            continue;
+        } else {
+            break;
+        }
+    }
+
     Ok(())
 }
 
