@@ -120,7 +120,7 @@ fn help_behaviour(args: Vec<String>) {
     println!("Usage:\ncargo run -- <option>\nturing_sim.exe <option>");
     println!("\nOptions:");
     println!("-help : Shows help menu");
-    println!("-csv <path> : loads a transition functions from csv file");
+    println!("-csv <path> : loads transition functions from csv file");
     println!("-demo 0 : translates every 'a' to 'b'");
     println!("-demo 1 : accepts strings in form of a(n)b(n)");
     println!("-demo 2 : copies strings of '1'");
@@ -243,7 +243,20 @@ fn csv_behaviour(args: Vec<String>) -> io::Result<()> {
         if direction.len() != 1 {
             println!("Invalid Direction (Direction is more than a character)");
             println!("{:?}", record);
-            break;
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Invalid Data in direction field",
+            ));
+        }
+        if (input != "□".repeat(tracks) && input.len() != tracks)
+        || (replacement != "□".repeat(tracks) && replacement.len() != tracks)
+        {
+        println!("Symbol length does not match number of tracks");
+        println!("{:?}", record);
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            "Mismatch length",
+        ));
         }
         let direction_char: Vec<char> = direction[0].to_uppercase().collect();
         if direction_char[0] == 'R' || direction_char[0] == 'L' {
