@@ -249,14 +249,11 @@ fn csv_behaviour(args: Vec<String>) -> io::Result<()> {
             ));
         }
         if (input != "□".repeat(tracks) && input.len() != tracks)
-        || (replacement != "□".repeat(tracks) && replacement.len() != tracks)
+            || (replacement != "□".repeat(tracks) && replacement.len() != tracks)
         {
-        println!("Symbol length does not match number of tracks");
-        println!("{:?}", record);
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
-            "Mismatch length",
-        ));
+            println!("Symbol length does not match number of tracks");
+            println!("{:?}", record);
+            return Err(io::Error::new(io::ErrorKind::Other, "Mismatch length"));
         }
         let direction_char: Vec<char> = direction[0].to_uppercase().collect();
         if direction_char[0] == 'R' || direction_char[0] == 'L' {
